@@ -171,6 +171,18 @@ export default class IdealImage extends Component {
     loader: 'xhr',
   }
 
+  static getDerivedStateFromProps(props, state) {
+    if (state.url && props.src !== state.url) {
+      const pickedSrc = this.getPickedSrc()
+      const {getUrl} = props
+      const url = getUrl ? getUrl(pickedSrc) : pickedSrc.src
+      return {
+        url,
+      }
+    }
+    return null
+  }
+
   componentDidMount() {
     if (nativeConnection) {
       this.updateConnection = () => {
@@ -303,10 +315,8 @@ export default class IdealImage extends Component {
     }
   }
 
-  onEnter = () => {
-    if (this.state.inViewport) return
-    this.setState({inViewport: true})
-    const pickedSrc = selectSrc({
+  getPickedSrc = () =>
+    selectSrc({
       srcSet: this.props.srcSet,
       maxImageWidth:
         this.props.srcSet.length > 1
@@ -314,6 +324,10 @@ export default class IdealImage extends Component {
           : 0,
       supportsWebp,
     })
+  onEnter = () => {
+    if (this.state.inViewport) return
+    this.setState({inViewport: true})
+    const pickedSrc = this.getPickedSrc()
     const {getUrl} = this.props
     const url = getUrl ? getUrl(pickedSrc) : pickedSrc.src
     const shouldAutoDownload = this.props.shouldAutoDownload({
